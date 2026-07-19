@@ -256,6 +256,25 @@
             display: none !important;
         }
 
+        /* Контейнер-обертка для наложения невидимой платежной кнопки */
+        .checkout-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .crossmint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.001 !important; /* Делаем кнопку абсолютно невидимой */
+            display: block;
+            cursor: pointer;
+            z-index: 10;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.96); }
             to { opacity: 1; transform: scale(1); }
@@ -298,13 +317,23 @@
                 By moving to secure checkout, you are requesting to lock an exclusive edition number (№001 to №300) linked to your email in the decentralized Registry of Authenticity.<br><br>
                 Please ensure your checkout process is completed. Unfinished allocations will be released back to the global waitlist within 10 minutes.
             </div>
-            <button id="confirm-reserve">PROCEED TO SECURE CHECKOUT</button>
+            
+            <!-- Безопасное наложение: реальная кнопка Crossmint перекрывает визуальную кнопку -->
+            <div class="checkout-wrapper">
+                <button style="margin-top:0; pointer-events: none;">PROCEED TO SECURE CHECKOUT</button>
+                <crossmint-pay-button 
+                    id="crossmint-actual-button"
+                    class="crossmint-overlay"
+                    clientId="829119b1-6444-48a2-86af-19f3c0fa73c4"
+                    collectionId="6d9012c8-4906-420c-9c4f-57d05891e648"
+                    environment="production"
+                    paymentMethod="fiat">
+                </crossmint-pay-button>
+            </div>
+            
             <div id="close-modal" class="modal-cancel">Back to Edit</div>
         </div>
     </div>
-
-    <!-- Скрытый контейнер для генерации фонового веб-компонента Crossmint -->
-    <div id="crossmint-hidden-container" style="display: none !important;"></div>
 
     <div class="footer">
         © 2026 Spring Renaissance. All rights reserved.<br>
@@ -320,13 +349,12 @@
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
     let statusBox = document.getElementById('delivery-status');
-    let crossmintContainer = document.getElementById('crossmint-hidden-container');
+    let crossmintActualButton = document.getElementById('crossmint-actual-button');
     
     let allocationModal = document.getElementById('allocation-modal');
-    let confirmReserveBtn = document.getElementById('confirm-reserve');
     let closeModalBtn = document.getElementById('close-modal');
 
-    // Полный список всех 50 штатов США с таймингами
+    // Список всех 50 штатов США
     const USRegions = [
         { name: "Alabama", time: "11-13 days", type: "Southern Route" },
         { name: "Alaska", time: "14-16 days", type: "Remote Air" },
@@ -435,24 +463,6 @@
             return;
         }
 
-        allocationModal.classList.remove('modal-hidden');
-    };
-
-    closeModalBtn.onclick = function() {
-        allocationModal.classList.add('modal-hidden');
-    };
-
-    confirmReserveBtn.onclick = function() {
-        allocationModal.classList.add('modal-hidden');
-
-        btn.innerText = "SECURE CHECKOUT...";
-        btn.disabled = true;
-
-        let name = document.getElementById('name').value.trim();
-        let email = emailInput.value.trim();
-        let city = document.getElementById('city').value.trim();
-        let address = document.getElementById('address').value.trim();
-
         const clientMetadata = {
             shipping_name: name,
             customer_email: email,
@@ -461,33 +471,25 @@
             edition: "Pre-order Drop 1"
         };
 
-        // Полное решение ошибки: Динамически инжектим официальный веб-компонент Crossmint
-        crossmintContainer.innerHTML = ''; 
-        
-        let crossmintButton = document.createElement('crossmint-pay-button');
-        crossmintButton.setAttribute('clientId', '829119b1-6444-48a2-86af-19f3c0fa73c4');
-        crossmintButton.setAttribute('collectionId', '6d9012c8-4906-420c-9c4f-57d05891e648');
-        crossmintButton.setAttribute('environment', 'production');
-        crossmintButton.setAttribute('paymentMethod', 'fiat');
-        crossmintButton.setAttribute('mintConfig', JSON.stringify({
+        // Заблаговременно обновляем данные в готовом веб-компоненте до открытия модального окна
+        crossmintActualButton.setAttribute('mintConfig', JSON.stringify({
             totalPrice: "45.00",
             meta: clientMetadata
         }));
 
-        crossmintContainer.appendChild(crossmintButton);
-
-        // Имитируем нативный клик по готовому элементу SDK — это стабильно открывает оверлей оплаты
-        setTimeout(() => {
-            if (crossmintButton) {
-                crossmintButton.click();
-            }
-        }, 150);
-
-        setTimeout(() => {
-            btn.innerText = "RESERVE LE VASE LIVRE";
-            btn.disabled = false;
-        }, 3000);
+        allocationModal.classList.remove('modal-hidden');
     };
+
+    closeModalBtn.onclick = function() {
+        allocationModal.classList.add('modal-hidden');
+    };
+
+    // Автоматически закрываем модальное окно через секунду после того, как пользователь нажал на оплату
+    crossmintActualButton.addEventListener('click', function() {
+        setTimeout(() => {
+            allocationModal.classList.add('modal-hidden');
+        }, 1000);
+    });
 </script>
 </body>
 </html>
