@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Официальный SDK Crossmint для запуска фиатного шлюза -->
+    <script src="https://unpkg.com/@crossmint/client-sdk-vanilla"></script>
+    <style>
+        :root {
+            --brand-color: #2c2c2c;
+            --bg-color: #faf9f6;
+            --input-bg: #ffffff;
+            --accent-color: #8e7f71;
+        }
+
+        .back-btn {
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
+            background-color: var(--bg-color);
+            color: var(--brand-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .logo-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .logo {
+            width: 220px;
+            height: auto;
+            display: block;
+        }
+
+        h2 {
+            font-weight: 300;
+            letter-spacing: 1.5px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            flex-grow: 1;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #e0ddd5;
+            border-radius: 10px;
+            background: var(--input-bg);
+            box-sizing: border-box;
+            outline: none;
+            font-size: 16px;
+            -webkit-appearance: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: calc(100% - 12px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e0ddd5;
+            border-radius: 10px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04);
+            margin-bottom: 15px;
+        }
+
+        .suggestions-hidden {
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 14px 16px;
+            font-size: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #faf9f6;
+            text-align: left;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:active {
+            background-color: #faf9f6;
+        }
+
+        .delivery-status {
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            text-align: left;
+            border-left: 3px solid transparent;
+        }
+
+        .status-success {
+            background-color: #f3f1eb;
+            color: var(--brand-color);
+            border-left-color: var(--accent-color);
+        }
+
+        .status-warning {
+            background-color: #fff5f5;
+            color: #8a3333;
+            border-left-color: #8a3333;
+        }
+
+        .status-hidden {
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background-color: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background-color: #777;
+            opacity: 0.7;
+        }
+
+        .info-text {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--accent-color);
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-bottom: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #a0a0a0;
+            line-height: 1.6;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .modal-card {
+            background: var(--bg-color);
+            border: 1px solid #e0ddd5;
+            border-radius: 14px;
+            padding: 28px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0px 12px 34px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            color: var(--brand-color);
+        }
+
+        .modal-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--brand-color);
+            margin-bottom: 26px;
+            text-align: left;
+        }
+
+        .modal-cancel {
+            display: inline-block;
+            margin-top: 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .modal-cancel:hover {
+            color: var(--brand-color);
+        }
+
+        .modal-hidden {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="back-btn" onclick="window.history.back()">← Back</div>
+
+    <div class="logo-container">
+        <img src="https://cdn.jsdelivr.net/gh/UpperTrout71529/Spring-Renaissance-Concierge@main/SR%20LOGO%20PNG.png" alt="Spring Renaissance" class="logo">
+    </div>
+
+    <div class="container">
+        <h2>Reserve Your Allocation</h2>
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="email" id="email" placeholder="Email Address">
+        
+        <div class="autocomplete-wrapper">
+            <input type="text" id="city" placeholder="State of Delivery" autocomplete="off">
+            <div id="suggestions" class="suggestions-list suggestions-hidden"></div>
+        </div>
+        
+        <div id="delivery-status" class="delivery-status status-hidden"></div>
+
+        <input type="text" id="address" placeholder="Shipping Address (Street, City, Zip)">
+        
+        <button id="send">RESERVE LE VASE LIVRE</button>
+        
+        <div class="info-text">
+            Upon successful payment, our concierge service will contact you via email to transmit your tracking number and your personal key to the Registry of Authenticity.
+        </div>
+    </div>
+
+    <div id="allocation-modal" class="modal-overlay modal-hidden">
+        <div class="modal-card">
+            <div class="modal-title">Allocation Policy Notice</div>
+            <div class="modal-text">
+                By moving to secure checkout, you are requesting to lock an exclusive edition number (№001 to №300) linked to your email in the decentralized Registry of Authenticity.<br><br>
+                Please ensure your checkout process is completed. Unfinished allocations will be released back to the global waitlist within 10 minutes.
+            </div>
+            <button id="confirm-reserve">PROCEED TO SECURE CHECKOUT</button>
+            <div id="close-modal" class="modal-cancel">Back to Edit</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2026 Spring Renaissance. All rights reserved.<br>
+        Limited Launch Drop (300 Units Worldwide).<br>
+        Handcrafted Quality & Design Studio Release.<br>
+        Secured and processed globally via Crossmint.<br>
+        By placing an order, you agree to our Terms of Service.
+    </div>
+
+<script>
+    let btn = document.getElementById('send');
+    let emailInput = document.getElementById('email');
+    let cityInput = document.getElementById('city');
+    let suggestionsList = document.getElementById('suggestions');
+    let statusBox = document.getElementById('delivery-status');
+    
+    let allocationModal = document.getElementById('allocation-modal');
+    let confirmReserveBtn = document.getElementById('confirm-reserve');
+    let closeModalBtn = document.getElementById('close-modal');
+
+    // Полный упорядоченный список всех 50 штатов США с реальными таймингами авиа-доставки
+    const USRegions = [
+        { name: "Alabama", time: "11-13 days", type: "Southern Route" },
+        { name: "Alaska", time: "14-16 days", type: "Remote Air" },
+        { name: "Arizona", time: "9-11 days", type: "West Coast Hub" },
+        { name: "Arkansas", time: "11-13 days", type: "Southern Route" },
+        { name: "California", time: "9-11 days", type: "West Coast Entry" },
+        { name: "Colorado", time: "10-12 days", type: "Midwest Line" },
+        { name: "Connecticut", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "Delaware", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Florida", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Georgia", time: "11-13 days", type: "Southern Route" },
+        { name: "Hawaii", time: "14-16 days", type: "Pacific Hub" },
+        { name: "Idaho", time: "10-12 days", type: "West Coast Hub" },
+        { name: "Illinois", time: "10-12 days", type: "Midwest Hub" },
+        { name: "Indiana", time: "11-13 days", type: "Midwest Line" },
+        { name: "Iowa", time: "11-13 days", type: "Midwest Line" },
+        { name: "Kansas", time: "11-13 days", type: "Midwest Line" },
+        { name: "Kentucky", time: "11-13 days", type: "Midwest Line" },
+        { name: "Louisiana", time: "11-13 days", type: "Southern Route" },
+        { name: "Maine", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "Maryland", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Massachusetts", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "Michigan", time: "11-13 days", type: "Midwest Hub" },
+        { name: "Minnesota", time: "11-13 days", type: "Midwest Line" },
+        { name: "Mississippi", time: "11-13 days", type: "Southern Route" },
+        { name: "Missouri", time: "11-13 days", type: "Midwest Line" },
+        { name: "Montana", time: "12-14 days", type: "Northwest Line" },
+        { name: "Nebraska", time: "11-13 days", type: "Midwest Line" },
+        { name: "Nevada", time: "9-11 days", type: "West Coast Hub" },
+        { name: "New Hampshire", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "New Jersey", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "New Mexico", time: "10-12 days", type: "Southern Route" },
+        { name: "New York", time: "11-13 days", type: "East Coast Entry" },
+        { name: "North Carolina", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "North Dakota", time: "12-14 days", type: "Northwest Line" },
+        { name: "Ohio", time: "11-13 days", type: "Midwest Line" },
+        { name: "Oklahoma", time: "11-13 days", type: "Southern Route" },
+        { name: "Oregon", time: "9-11 days", type: "West Coast Entry" },
+        { name: "Pennsylvania", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Rhode Island", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "South Carolina", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "South Dakota", time: "12-14 days", type: "Northwest Line" },
+        { name: "Tennessee", time: "11-13 days", type: "Southern Route" },
+        { name: "Texas", time: "10-12 days", type: "Southern Hub" },
+        { name: "Utah", time: "9-11 days", type: "West Coast Hub" },
+        { name: "Vermont", time: "12-14 days", type: "East Coast Gateway" },
+        { name: "Virginia", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Washington", time: "9-11 days", type: "West Coast Entry" },
+        { name: "West Virginia", time: "11-13 days", type: "East Coast Gateway" },
+        { name: "Wisconsin", time: "11-13 days", type: "Midwest Line" },
+        { name: "Wyoming", time: "12-14 days", type: "Northwest Line" }
+    ];
+
+    cityInput.addEventListener('input', function() {
+        let query = this.value.trim().toLowerCase();
+        suggestionsList.innerHTML = '';
+        
+        if (query.length < 1) {
+            suggestionsList.classList.add('suggestions-hidden');
+            statusBox.classList.add('status-hidden');
+            return;
+        }
+
+        let matches = USRegions.filter(item => item.name.toLowerCase().startsWith(query));
+
+        if (matches.length > 0) {
+            suggestionsList.classList.remove('suggestions-hidden');
+            statusBox.classList.add('status-hidden');
+            
+            matches.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = item.name;
+                div.onclick = function() {
+                    cityInput.value = item.name;
+                    suggestionsList.classList.add('suggestions-hidden');
+                    
+                    statusBox.className = 'delivery-status status-success';
+                    statusBox.innerHTML = `✨ <strong>Priority Air Freight Routing Enabled.</strong><br>Your object is prepared for direct express dispatch. Estimated delivery to ${item.name} is <strong>${item.time}</strong> with end-to-end premium tracking.`;
+                    statusBox.classList.remove('status-hidden');
+                };
+                suggestionsList.appendChild(div);
+            });
+        } else {
+            suggestionsList.classList.add('suggestions-hidden');
+            statusBox.className = 'delivery-status status-warning';
+            statusBox.innerHTML = `Standard international shipping lines will be applied.<br><br>Please complete your reservation — our logistics concierge will manually optimize your air freight route once confirmed.`;
+            statusBox.classList.remove('status-hidden');
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target !== cityInput) {
+            suggestionsList.classList.add('suggestions-hidden');
+        }
+    });
+
+    btn.onclick = function() {
+        let name = document.getElementById('name').value.trim();
+        let email = emailInput.value.trim();
+        let city = document.getElementById('city').value.trim();
+        let address = document.getElementById('address').value.trim();
+
+        // Базовая проверка e-mail на валидность для снижения фрода
+        if (name.length < 2 || email.length < 5 || !email.includes('@') || city.length < 2 || address.length < 5) {
+            alert("Please fill in all requested fields with a valid email address to complete reservation.");
+            return;
+        }
+
+        allocationModal.classList.remove('modal-hidden');
+    };
+
+    closeModalBtn.onclick = function() {
+        allocationModal.classList.add('modal-hidden');
+    };
+
+    confirmReserveBtn.onclick = function() {
+        allocationModal.classList.add('modal-hidden');
+
+        btn.innerText = "SECURE CHECKOUT...";
+        btn.disabled = true;
+
+        let name = document.getElementById('name').value.trim();
+        let email = emailInput.value.trim();
+        let city = document.getElementById('city').value.trim();
+        let address = document.getElementById('address').value.trim();
+
+        // Передаем имейл и адрес напрямую в метаданные Crossmint для аналитики вашего заказа
+        const clientMetadata = {
+            shipping_name: name,
+            customer_email: email,
+            shipping_state: city,
+            shipping_address: address,
+            edition: "Pre-order Drop 1"
+        };
+
+        try {
+            window.crossmintModalService.open({
+                clientId: "829119b1-6444-48a2-86af-19f3c0fa73c4",
+                collectionId: "6d9012c8-4906-420c-9c4f-57d05891e648",
+                environment: "production",
+                paymentMethod: "fiat",
+                mintConfig: {
+                    totalPrice: "45.00",
+                    meta: clientMetadata
+                }
+            });
+        } catch (error) {
+            console.error("Crossmint initialization failed:", error);
+            alert("Checkout system temporary unavailable. Please try again.");
+        }
+
+        setTimeout(() => {
+            btn.innerText = "RESERVE LE VASE LIVRE";
+            btn.disabled = false;
+        }, 3000);
+    };
+</script>
+</body>
+</html>
