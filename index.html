@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Официальный SDK Crossmint для регистрации веб-компонентов -->
-    <script src="https://unpkg.com/@crossmint/client-sdk-vanilla"></script>
     <style>
         :root {
             --brand-color: #2c2c2c;
@@ -168,6 +166,7 @@
         button:disabled {
             background-color: #777;
             opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .info-text {
@@ -256,25 +255,6 @@
             display: none !important;
         }
 
-        /* Контейнер-обертка для наложения невидимой платежной кнопки */
-        .checkout-wrapper {
-            position: relative;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .crossmint-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.001 !important; /* Делаем кнопку абсолютно невидимой */
-            display: block;
-            cursor: pointer;
-            z-index: 10;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.96); }
             to { opacity: 1; transform: scale(1); }
@@ -318,18 +298,8 @@
                 Please ensure your checkout process is completed. Unfinished allocations will be released back to the global waitlist within 10 minutes.
             </div>
             
-            <!-- Безопасное наложение: реальная кнопка Crossmint перекрывает визуальную кнопку -->
-            <div class="checkout-wrapper">
-                <button style="margin-top:0; pointer-events: none;">PROCEED TO SECURE CHECKOUT</button>
-                <crossmint-pay-button 
-                    id="crossmint-actual-button"
-                    class="crossmint-overlay"
-                    clientId="829119b1-6444-48a2-86af-19f3c0fa73c4"
-                    collectionId="6d9012c8-4906-420c-9c4f-57d05891e648"
-                    environment="production"
-                    paymentMethod="fiat">
-                </crossmint-pay-button>
-            </div>
+            <!-- Кнопка перехода к чекауту без скрытых оверлеев -->
+            <button id="checkout-btn" style="margin-top:0;">PROCEED TO SECURE CHECKOUT</button>
             
             <div id="close-modal" class="modal-cancel">Back to Edit</div>
         </div>
@@ -339,7 +309,7 @@
         © 2026 Spring Renaissance. All rights reserved.<br>
         Limited Launch Drop (300 Units Worldwide).<br>
         Handcrafted Quality & Design Studio Release.<br>
-        Secured and processed globally via Crossmint.<br>
+        Secured and processed globally via NexaPay.<br>
         By placing an order, you agree to our Terms of Service.
     </div>
 
@@ -349,9 +319,9 @@
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
     let statusBox = document.getElementById('delivery-status');
-    let crossmintActualButton = document.getElementById('crossmint-actual-button');
     
     let allocationModal = document.getElementById('allocation-modal');
+    let checkoutBtn = document.getElementById('checkout-btn');
     let closeModalBtn = document.getElementById('close-modal');
 
     // Список всех 50 штатов США
@@ -463,20 +433,7 @@
             return;
         }
 
-        const clientMetadata = {
-            shipping_name: name,
-            customer_email: email,
-            shipping_state: city,
-            shipping_address: address,
-            edition: "Pre-order Drop 1"
-        };
-
-        // Заблаговременно обновляем данные в готовом веб-компоненте до открытия модального окна
-        crossmintActualButton.setAttribute('mintConfig', JSON.stringify({
-            totalPrice: "45.00",
-            meta: clientMetadata
-        }));
-
+        // Показываем окно уведомления
         allocationModal.classList.remove('modal-hidden');
     };
 
@@ -484,12 +441,13 @@
         allocationModal.classList.add('modal-hidden');
     };
 
-    // Автоматически закрываем модальное окно через секунду после того, как пользователь нажал на оплату
-    crossmintActualButton.addEventListener('click', function() {
-        setTimeout(() => {
-            allocationModal.classList.add('modal-hidden');
-        }, 1000);
-    });
+    // Прямой переход на чекаут NexaPay по клику в модалке
+    checkoutBtn.onclick = function() {
+        checkoutBtn.innerText = "REDIRECTING TO CHECKOUT...";
+        checkoutBtn.disabled = true;
+        
+        window.location.href = "https://nexapay.one/checkout/order_08be4ee244c8c2dc072107c7a430613d?sig=plsig_94cc260d7ab2d7bbbf57664675056e9b76f4e6f3bdc7067e956d0102a3dd9cb3";
+    };
 </script>
 </body>
 </html>
