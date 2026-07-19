@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Официальный SDK Crossmint для запуска фиатного шлюза -->
+    <!-- Официальный SDK Crossmint для регистрации веб-компонентов -->
     <script src="https://unpkg.com/@crossmint/client-sdk-vanilla"></script>
     <style>
         :root {
@@ -303,6 +303,9 @@
         </div>
     </div>
 
+    <!-- Скрытый контейнер для генерации фонового веб-компонента Crossmint -->
+    <div id="crossmint-hidden-container" style="display: none !important;"></div>
+
     <div class="footer">
         © 2026 Spring Renaissance. All rights reserved.<br>
         Limited Launch Drop (300 Units Worldwide).<br>
@@ -317,12 +320,13 @@
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
     let statusBox = document.getElementById('delivery-status');
+    let crossmintContainer = document.getElementById('crossmint-hidden-container');
     
     let allocationModal = document.getElementById('allocation-modal');
     let confirmReserveBtn = document.getElementById('confirm-reserve');
     let closeModalBtn = document.getElementById('close-modal');
 
-    // Полный упорядоченный список всех 50 штатов США с реальными таймингами авиа-доставки
+    // Полный список всех 50 штатов США с таймингами
     const USRegions = [
         { name: "Alabama", time: "11-13 days", type: "Southern Route" },
         { name: "Alaska", time: "14-16 days", type: "Remote Air" },
@@ -426,7 +430,6 @@
         let city = document.getElementById('city').value.trim();
         let address = document.getElementById('address').value.trim();
 
-        // Базовая проверка e-mail на валидность для снижения фрода
         if (name.length < 2 || email.length < 5 || !email.includes('@') || city.length < 2 || address.length < 5) {
             alert("Please fill in all requested fields with a valid email address to complete reservation.");
             return;
@@ -450,7 +453,6 @@
         let city = document.getElementById('city').value.trim();
         let address = document.getElementById('address').value.trim();
 
-        // Передаем имейл и адрес напрямую в метаданные Crossmint для аналитики вашего заказа
         const clientMetadata = {
             shipping_name: name,
             customer_email: email,
@@ -459,21 +461,27 @@
             edition: "Pre-order Drop 1"
         };
 
-        try {
-            window.crossmintModalService.open({
-                clientId: "829119b1-6444-48a2-86af-19f3c0fa73c4",
-                collectionId: "6d9012c8-4906-420c-9c4f-57d05891e648",
-                environment: "production",
-                paymentMethod: "fiat",
-                mintConfig: {
-                    totalPrice: "45.00",
-                    meta: clientMetadata
-                }
-            });
-        } catch (error) {
-            console.error("Crossmint initialization failed:", error);
-            alert("Checkout system temporary unavailable. Please try again.");
-        }
+        // Полное решение ошибки: Динамически инжектим официальный веб-компонент Crossmint
+        crossmintContainer.innerHTML = ''; 
+        
+        let crossmintButton = document.createElement('crossmint-pay-button');
+        crossmintButton.setAttribute('clientId', '829119b1-6444-48a2-86af-19f3c0fa73c4');
+        crossmintButton.setAttribute('collectionId', '6d9012c8-4906-420c-9c4f-57d05891e648');
+        crossmintButton.setAttribute('environment', 'production');
+        crossmintButton.setAttribute('paymentMethod', 'fiat');
+        crossmintButton.setAttribute('mintConfig', JSON.stringify({
+            totalPrice: "45.00",
+            meta: clientMetadata
+        }));
+
+        crossmintContainer.appendChild(crossmintButton);
+
+        // Имитируем нативный клик по готовому элементу SDK — это стабильно открывает оверлей оплаты
+        setTimeout(() => {
+            if (crossmintButton) {
+                crossmintButton.click();
+            }
+        }, 150);
 
         setTimeout(() => {
             btn.innerText = "RESERVE LE VASE LIVRE";
