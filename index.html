@@ -1,94 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spring Renaissance — Reserve Allocation</title>
     <style>
         :root {
-    /* Теплый, обволакивающий цвет дорогой бумаги/алебастра */
-    --bg-color: #F7F5F0; 
-    
-    /* Глубокий кофейно-черный для текста и полей */
-    --brand-color: #2A2421; 
-    
-    /* Цвет кнопки — горький шоколад / эспрессо (в цвет флакона на фото) */
-    --button-bg: #322C29; 
-    
-    /* Рамки инпутов — мягкое матовое золото */
-    --input-border: #D1C9BC; 
-    
-    /* Акценты — благородный тауп */
-    --accent-color: #8E7F71; 
-}
+            /* Hybrid Stripe & Quiet Luxury Palette */
+            --bg-color: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --border-color: #E2E8F0;
+            --border-focus: #0F172A;
+            --focus-ring: rgba(15, 23, 42, 0.08);
+            --button-bg: #0F172A;
+            --button-hover: #1E293B;
+            --success-bg: #F0FDF4;
+            --success-border: #BBF7D0;
+            --success-text: #166534;
+            --warning-bg: #FEF2F2;
+            --warning-border: #FECACA;
+            --warning-text: #991B1B;
+            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-        .back-btn {
-            width: 100%;
-            max-width: 400px;
-            text-align: left;
-            margin-bottom: 5px;
-            color: var(--accent-color);
-            cursor: pointer;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
+            font-family: var(--font-family);
             background-color: var(--bg-color);
-            color: var(--brand-color);
-            margin: 0;
-            padding: 20px;
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            padding: 32px 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header-nav {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .security-badge-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #059669;
+            background: #ECFDF5;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #A7F3D0;
         }
 
         .logo-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
-        }
-
-        .logo {
-            width: 220px;
-            height: auto;
-            display: block;
-        }
-
-        h2 {
-            font-weight: 300;
-            letter-spacing: 1.5px;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            font-size: 1.1em;
+            margin-bottom: 24px;
             text-align: center;
         }
 
-        .container {
+        .logo {
+            width: 190px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .main-card {
             width: 100%;
-            max-width: 400px;
-            flex-grow: 1;
+            max-width: 440px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px 28px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            color: var(--text-primary);
+            text-transform: uppercase;
         }
 
         input {
             width: 100%;
-            padding: 16px;
-            margin-bottom: 15px;
-            border: 1px solid #e0ddd5;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
             border-radius: 10px;
-            background: var(--input-bg);
-            box-sizing: border-box;
+            background: #FFFFFF;
+            color: var(--text-primary);
+            font-size: 15px;
             outline: none;
-            font-size: 16px;
+            transition: all 0.2s ease;
             -webkit-appearance: none;
-            transition: border-color 0.2s ease;
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
         }
 
         input:focus {
-            border-color: var(--accent-color);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 4px var(--focus-ring);
         }
 
         .autocomplete-wrapper {
@@ -98,17 +146,17 @@
 
         .suggestions-list {
             position: absolute;
-            top: calc(100% - 12px);
+            top: calc(100% - 10px);
             left: 0;
             right: 0;
-            background: #ffffff;
-            border: 1px solid #e0ddd5;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
             border-radius: 10px;
             max-height: 180px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04);
-            margin-bottom: 15px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            margin-bottom: 14px;
         }
 
         .suggestions-hidden {
@@ -116,41 +164,41 @@
         }
 
         .suggestion-item {
-            padding: 14px 16px;
-            font-size: 15px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-primary);
             cursor: pointer;
-            border-bottom: 1px solid #faf9f6;
-            text-align: left;
+            border-bottom: 1px solid #F1F5F9;
+            transition: background 0.15s ease;
         }
 
         .suggestion-item:last-child {
             border-bottom: none;
         }
 
-        .suggestion-item:active {
-            background-color: #faf9f6;
+        .suggestion-item:hover, .suggestion-item:active {
+            background-color: #F8FAFC;
         }
 
         .delivery-status {
-            padding: 15px;
+            padding: 14px 16px;
             border-radius: 10px;
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 15px;
-            text-align: left;
-            border-left: 3px solid transparent;
+            margin-bottom: 14px;
+            border: 1px solid transparent;
         }
 
         .status-success {
-            background-color: #f3f1eb;
-            color: var(--brand-color);
-            border-left-color: var(--accent-color);
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border-color: var(--success-border);
         }
 
         .status-warning {
-            background-color: #fff5f5;
-            color: #8a3333;
-            border-left-color: #8a3333;
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            border-color: var(--warning-border);
         }
 
         .status-hidden {
@@ -159,44 +207,75 @@
 
         button {
             width: 100%;
-            padding: 18px;
-            background-color: var(--brand-color);
-            color: white;
+            padding: 16px;
+            background-color: var(--button-bg);
+            color: #FFFFFF;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
             transition: all 0.2s ease;
-            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            margin-top: 4px;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
         }
 
         button:disabled {
-            background-color: #777;
+            background-color: var(--text-muted);
             opacity: 0.7;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .trust-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .trust-icon {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
         }
 
         .info-text {
-            margin-top: 20px;
+            margin-top: 16px;
             text-align: center;
-            font-size: 13px;
-            color: var(--accent-color);
+            font-size: 12px;
+            color: var(--text-secondary);
             line-height: 1.5;
-            font-style: italic;
         }
 
         .footer {
-            margin-top: 40px;
-            padding-bottom: 20px;
+            margin-top: 32px;
             text-align: center;
-            font-size: 10px;
-            color: #a0a0a0;
+            font-size: 11px;
+            color: var(--text-muted);
             line-height: 1.6;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
         }
 
         .modal-overlay {
@@ -205,60 +284,58 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(15, 23, 42, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 20px;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
 
         .modal-card {
-            background: var(--bg-color);
-            border: 1px solid #e0ddd5;
-            border-radius: 14px;
-            padding: 28px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px 28px;
             width: 100%;
-            max-width: 360px;
-            box-shadow: 0px 12px 34px rgba(0, 0, 0, 0.08);
+            max-width: 380px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             text-align: center;
-            box-sizing: border-box;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-title {
             font-size: 13px;
-            font-weight: 400;
-            letter-spacing: 2px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 18px;
-            color: var(--brand-color);
+            margin-bottom: 16px;
+            color: var(--text-primary);
         }
 
         .modal-text {
             font-size: 13px;
             line-height: 1.6;
-            color: var(--brand-color);
-            margin-bottom: 26px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
             text-align: left;
         }
 
         .modal-cancel {
             display: inline-block;
             margin-top: 16px;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent-color);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
             cursor: pointer;
             text-decoration: none;
-            transition: color 0.2s ease;
+            transition: color 0.15s ease;
         }
 
         .modal-cancel:hover {
-            color: var(--brand-color);
+            color: var(--text-primary);
         }
 
         .modal-hidden {
@@ -266,21 +343,30 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.96); }
+            from { opacity: 0; transform: scale(0.97); }
             to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="back-btn" onclick="window.history.back()">← Back</div>
+    <div class="header-nav">
+        <div class="back-btn" onclick="window.history.back()">← Back</div>
+        <div class="security-badge-top">
+            <svg class="trust-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-5.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            256-Bit SSL Encrypted
+        </div>
+    </div>
 
     <div class="logo-container">
         <img src="https://cdn.jsdelivr.net/gh/UpperTrout71529/Spring-Renaissance-Concierge@main/SR%20LOGO%20PNG.png" alt="Spring Renaissance" class="logo">
     </div>
 
-    <div class="container">
-        <h2>Reserve Your Allocation</h2>
+    <div class="main-card">
+        <div class="card-header">
+            <h2>Reserve Your Allocation</h2>
+        </div>
+
         <input type="text" id="name" placeholder="Full Name">
         <input type="email" id="email" placeholder="Email Address">
         
@@ -295,6 +381,18 @@
         
         <button id="send">RESERVE LE VASE LIVRE</button>
         
+        <div class="trust-banner">
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                PCI-DSS Compliant
+            </div>
+            <span>•</span>
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Guaranteed Authenticity
+            </div>
+        </div>
+
         <div class="info-text">
             Upon successful payment, our concierge service will contact you via email to transmit your tracking number and your personal key to the Registry of Authenticity.
         </div>
@@ -308,7 +406,6 @@
                 Please ensure your checkout process is completed. Unfinished allocations will be released back to the global waitlist within 10 minutes.
             </div>
             
-            <!-- Кнопка перехода к чекауту без скрытых оверлеев -->
             <button id="checkout-btn" style="margin-top:0;">PROCEED TO SECURE CHECKOUT</button>
             
             <div id="close-modal" class="modal-cancel">Back to Edit</div>
@@ -443,7 +540,6 @@
             return;
         }
 
-        // Показываем окно уведомления
         allocationModal.classList.remove('modal-hidden');
     };
 
@@ -451,7 +547,6 @@
         allocationModal.classList.add('modal-hidden');
     };
 
-    // Прямой переход на чекаут NexaPay по клику в модалке
     checkoutBtn.onclick = function() {
         checkoutBtn.innerText = "REDIRECTING TO CHECKOUT...";
         checkoutBtn.disabled = true;
