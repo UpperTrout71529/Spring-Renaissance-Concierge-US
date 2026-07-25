@@ -6,7 +6,6 @@
     <title>Spring Renaissance — Reserve Allocation</title>
     <style>
         :root {
-            /* Hybrid Stripe & Quiet Luxury Palette */
             --bg-color: #FAFAFA;
             --card-bg: #FFFFFF;
             --text-primary: #0F172A;
@@ -421,6 +420,9 @@
     </div>
 
 <script>
+    // 💡 ВСТАВЬТЕ СЮДА ССЫЛКУ НА ВАШ GOOGLE APPS SCRIPT ИЛИ MAKE WEBHOOK
+    const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+
     let btn = document.getElementById('send');
     let emailInput = document.getElementById('email');
     let cityInput = document.getElementById('city');
@@ -431,7 +433,6 @@
     let checkoutBtn = document.getElementById('checkout-btn');
     let closeModalBtn = document.getElementById('close-modal');
 
-    // Список всех 50 штатов США
     const USRegions = [
         { name: "Alabama", time: "11-13 days", type: "Southern Route" },
         { name: "Alaska", time: "14-16 days", type: "Remote Air" },
@@ -547,10 +548,35 @@
         allocationModal.classList.add('modal-hidden');
     };
 
-    checkoutBtn.onclick = function() {
+    // 🚀 ОБРАБОТКА ОТПРАВКИ И РЕДИРЕКТА
+    checkoutBtn.onclick = async function() {
         checkoutBtn.innerText = "REDIRECTING TO CHECKOUT...";
         checkoutBtn.disabled = true;
-        
+
+        const payload = {
+            order_id: "SR-" + Date.now().toString().slice(-6),
+            date: new Date().toLocaleString(),
+            name: document.getElementById('name').value.trim(),
+            email: emailInput.value.trim(),
+            state: document.getElementById('city').value.trim(),
+            address: document.getElementById('address').value.trim()
+        };
+
+        // Если настроен GOOGLE_SCRIPT_URL — отправляем данные в Таблицу
+        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Предотвращает ошибки CORS
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.error("Data dispatch failed:", err);
+            }
+        }
+
+        // Перенаправление на оплату в NexaPay
         window.location.href = "https://nexapay.one/checkout/order_fb87887601e11516e921208ee3c0b51c?sig=plsig_7f0efba7888647d84ac12364e748bd83c45b5e4a3ea048c971e7f97897061c4a";
     };
 </script>
